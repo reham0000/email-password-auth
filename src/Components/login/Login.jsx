@@ -1,13 +1,15 @@
-import { createUserWithEmailAndPassword } from "firebase/auth/cordova";
+import { createUserWithEmailAndPassword } from "firebase/auth";
 import { auth } from "../../firebase.init";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Link } from "react-router-dom";
+import { sendPasswordResetEmail } from "firebase/auth";
 
 const Login = () => {
 
 
     const [success, setSuccess] = useState(false);
     const [loginError, setLoginError] = useState('');
+    const emailRef= useRef();
 
     const handleLogin = (e) => {
         e.preventDefault();
@@ -22,12 +24,33 @@ const Login = () => {
         createUserWithEmailAndPassword(auth, email, password)
         .then((result) => {
             console.log(result.user);
-            setSuccess(true)
+
+            if(result.user.emailVerified){
+                setLoginError('Please verify your email address');
+            }
+            else{
+                setSuccess(true);    
+            }
+            
         })
         .catch((error) => {
             console.log('ERROR',error.message);
             setLoginError(error.message)
         })
+    }
+
+    const handleForget = () => {
+        console.log('get me an email', emailRef.current.value);
+        const email = emailRef.current.value;
+        if(!email) {
+            console.log('Please provide a va;id email address');
+        }
+        else{
+            sendPasswordResetEmail(auth, email)
+            .then(() => {
+                alert("Password reset email sent, Please check your email")
+            })
+        }
     }
 
   return (
@@ -48,6 +71,7 @@ const Login = () => {
                 <span className="label-text">Email</span>
               </label>
               <input
+              ref={emailRef}
                 type="email"
                 name="email"
                 placeholder="email"
@@ -66,7 +90,7 @@ const Login = () => {
                 className="input input-bordered"
                 required
               />
-              <label className="label">
+              <label onClick={handleForget} className="label">
                 <a href="#" className="label-text-alt link link-hover">
                   Forgot password?
                 </a>
