@@ -1,10 +1,33 @@
+import { createUserWithEmailAndPassword } from "firebase/auth/cordova";
+import { auth } from "../../firebase.init";
+import { useState } from "react";
+import { Link } from "react-router-dom";
+
 const Login = () => {
+
+
+    const [success, setSuccess] = useState(false);
+    const [loginError, setLoginError] = useState('');
 
     const handleLogin = (e) => {
         e.preventDefault();
         const email = e.target.email.value;
         const password = e.target.password.value;
         console.log(email, password);
+
+
+        setSuccess(false);
+        setLoginError('');
+
+        createUserWithEmailAndPassword(auth, email, password)
+        .then((result) => {
+            console.log(result.user);
+            setSuccess(true)
+        })
+        .catch((error) => {
+            console.log('ERROR',error.message);
+            setLoginError(error.message)
+        })
     }
 
   return (
@@ -53,6 +76,13 @@ const Login = () => {
               <button className="btn btn-primary">Login</button>
             </div>
           </form>
+          {
+            success && <p className="text-green-600">User Login Successful</p>
+          }
+          {
+            loginError && <p className="text-red-600">{loginError}</p>
+          }
+          <p>New to this website? <Link to={'/signup'}>Please Sign Up</Link></p>
         </div>
       </div>
     </div>
